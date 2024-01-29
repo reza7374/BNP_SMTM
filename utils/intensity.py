@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.stats import gamma as gam
 
-def sample_intensity(data, chain, psf_stack, norm1_psf_stack, del_x, accept_i, tp):
+def sample_intensity(data, chain, psf_stack, norm1_psf_stack, accept_i, temp):
     """
     This function updates the point spread function (PSF) stack using a Markov chain Monte Carlo (MCMC) algorithm.
 
@@ -19,8 +19,8 @@ def sample_intensity(data, chain, psf_stack, norm1_psf_stack, del_x, accept_i, t
         The PSF kernel size.
     accept_i : int
         The number of accepted proposals.
-    tp : float
-        The total number of points in the data.
+    temp : float
+        The temperature parameter.
 
     Returns
     -------
@@ -50,7 +50,7 @@ def sample_intensity(data, chain, psf_stack, norm1_psf_stack, del_x, accept_i, t
     t_psf = i_val * norm1_psf_stack + np.expand_dims(bg, axis=(1, 2, 3))
 
     # Compute the log-likelihood, log-prior, and log-proposal probabilities
-    d_log_l = np.sum(data * (np.log(t_psf) - np.log(psf_stack)) - (t_psf - psf_stack)) / tp
+    d_log_l = np.sum(data * (np.log(t_psf) - np.log(psf_stack)) - (t_psf - psf_stack)) / temp
     d_log_prior = np.log(gam.pdf(t_i, a=alpha, scale=beta)) - np.log(gam.pdf(i_val, a=alpha, scale=beta))
     d_log_prop = np.log(gam.pdf(i_val, alpha_prop, t_i/alpha_prop)) - np.log(gam.pdf(t_i, alpha_prop, i_val/alpha_prop))
     d_log_post = d_log_l + d_log_prior + d_log_prop
