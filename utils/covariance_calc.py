@@ -1,39 +1,33 @@
+# filepath: /home/reza/software/bnp_smtm/utils/covariance_calc.py
 import numpy as np
 from scipy.spatial.distance import cdist
 
-def cal_cov(xg, yg, t, l, kernel='Exponential'):
+
+def calculate_covariance(x_values, y_values, t, l, kernel='exponential'):
     """
-    Calculates the covariance matrix between two Gaussian distributions.
+    Calculate the covariance matrix based on the given x and y values.
 
-    Parameters
-    ----------
-    xg : np.ndarray
-        The x-coordinates of the Gaussian distribution.
-    yg : np.ndarray
-        The y-coordinates of the Gaussian distribution.
-    t : float
-        The scale parameter of the Gaussian distribution.
-    l : float
-        The length scale parameter of the Gaussian distribution.
-    kernel : str, optional
-        The kernel function to use for the covariance matrix.
-        Options are 'Exponential' or 'Quadratic'.
-        The default is 'Exponential'.
+    Args:
+        x_values (array-like): The x values.
+        y_values (array-like): The y values.
+        t (float): The scaling factor.
+        l (float): The length scale.
+        kernel (str, optional): The kernel function to use. Defaults to 'exponential'.
 
-    Returns
-    -------
-    np.ndarray
-        The covariance matrix between the two Gaussian distributions.
-
+    Returns:
+        ndarray: The covariance matrix.
     """
-    xg = np.array(xg).flatten()
-    yg = np.array(yg).flatten()
-    x1 = np.array([xg, yg]).transpose()
-    dist = cdist(x1, x1)
-
-    if kernel == 'Exponential':
-        k = (t**2) * np.exp(-dist**2 / (2 * l**2))
-    elif kernel == 'Quadratic':
-        k = (t**2) * (1 + dist**2 / (2 * l**2))
-
-    return k
+    # Convert x and y values to coordinates
+    coordinates = np.column_stack((np.array(x_values).flatten(), np.array(y_values).flatten()))
+    
+    # Calculate pairwise distances between coordinates
+    distances = cdist(coordinates, coordinates)
+    
+    if kernel == 'exponential':
+        # Calculate covariance using exponential kernel
+        covariance = (t ** 2) * np.exp(-distances ** 2 / l ** 2 / 2)
+    elif kernel == 'quadratic':
+        # Calculate covariance using quadratic kernel
+        covariance = (t ** 2) * (1 + distances ** 2 / l ** 2 / 2)
+    
+    return covariance
