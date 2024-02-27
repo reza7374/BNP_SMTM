@@ -64,7 +64,7 @@ def norm_pdf(x, mu, sigma):
     """
     return st.norm.pdf(x, mu, sigma)
 
-def bernoulli_probability(x_values, success_prob, failure_prob):
+def bernoulli_pdf(x_values, success_prob, failure_prob):
     """
     Calculates the Bernoulli probability for a series of values x_values, given the success probability and failure probability.
 
@@ -88,3 +88,22 @@ def bernoulli_probability(x_values, success_prob, failure_prob):
     probability = np.where(x_values == 0, 1 - param, param)
 
     return probability
+
+def phase_retrieval(iteration, phase_estimate, z0, zx, zy, zz, mask, adisk):
+    # create a copy of the original phase estimate
+    updated_phase = np.copy(phase_estimate)
+    
+    # iterate the phase retrieval algorithm
+    for _ in range(iteration):
+        # compute the shift in x, y, z, and offset
+        x_shift = np.sum(updated_phase * zx * mask) / adisk
+        y_shift = np.sum(updated_phase * zy * mask) / adisk
+        z_shift = np.sum(updated_phase * zz * mask) / adisk
+        offset = np.sum(updated_phase * z0 * mask) / adisk
+        
+        # subtract the shifts and offset from the phase estimate, and apply the mask
+        updated_phase = (updated_phase - x_shift * zx - y_shift * zy - z_shift * zz - offset * z0) * mask
+
+    return updated_phase
+
+
