@@ -1,5 +1,6 @@
 import numpy as np
 from math import gamma
+from scipy.special import gammaln
 import scipy.stats as st
 
 def gampdf(x: float, k: float, theta: float) -> float:
@@ -47,7 +48,7 @@ def inv_gamma_pdf(x, a, b):
     Returns:
         float: Value of the inverse gamma PDF at the specified point x.
     """
-    return (b**a / gamma(a)) * x**(-a-1) * np.exp(-b / x)
+    return np.exp(a * np.log(b) - gammaln(a) - (a + 1) * np.log(x) - b / x)
 
 def norm_pdf(x, mu, sigma):
     """
