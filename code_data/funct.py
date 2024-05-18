@@ -759,7 +759,7 @@ def Save_info(itr, x, y, z, phase, mag, I, bg, D, loads, post, psf, path=""):
         None
     """
     # Save results every 10,000 iterations
-    each = 10000
+    each = 50000
     kj = 1000
     if itr % each == 0:
         r = int(itr / each)
@@ -980,7 +980,7 @@ def RunRit(Data, Struct, BNP, Bg, D, M, Xstart="None", Ystart="None"):
     
     # Calculate size of sub-pixel array and initialize an array of zeros with this size
     SZ = Struct['SubPixel']*Struct['NPix']
-    SubPixelZeros = np.zeros((SZ,SZ),dtype=np.complex)
+    SubPixelZeros = np.zeros((SZ,SZ),dtype=np.complex128)
     
     # Calculate start and end indices for sub-pixel array
     StartInd = int(SZ/2-Struct['NPix']/2)
@@ -1026,11 +1026,11 @@ def RunRit(Data, Struct, BNP, Bg, D, M, Xstart="None", Ystart="None"):
     tChain = {'Mag':1, 'Phase': 1, 'PSFstack':1, 'Bg':np.array([10,25]) ,'I':2500, 
               'X':x0, 'Y':y0, 'Z':z0, 'D':60, 'LogLike':1, 'LogPost':1, 
               'loads': np.zeros(M)}
-    tChain['Mag'] =     np.ones(Mask.shape)
-    tChain['Phase'] = np.zeros_like(Mask) #Struct.Pupil_Phase;
-    tChain['Bg'] = np.random.gamma(1,100,np.size(DelX,axis=0))
-    tChain['I'] = gam.rvs(a=3, loc=3800, scale=100)
-    tChain['D'] = 100*np.random.rand()
+    tChain['Mag'] =   np.load("chains/chains1/chain2Mag_1.npy")[-1] #  np.ones(Mask.shape)
+    tChain['Phase'] = np.load("chains/chains1/chain2Phase_1.npy")[-1] # np.zeros_like(Mask) #Struct.Pupil_Phase;
+    tChain['Bg'] = np.load("chains/chains1/chain2Bg_1.npy")[-1] # np.random.gamma(1,100,np.size(DelX,axis=0))
+    tChain['I'] = np.load("chains/chains1/chain2I_1.npy")[-1] # gam.rvs(a=3, loc=3800, scale=100)
+    tChain['D'] = np.load("chains/chains1/chain2D_1.npy")[-1] # 100*np.random.rand()
     if Xstart == "None":
         tChain['X'] = np.zeros((NStack,M)) #(ImSZ/10)*randn(1,NStack)/10+ImSZ/2
     else:
@@ -1041,10 +1041,10 @@ def RunRit(Data, Struct, BNP, Bg, D, M, Xstart="None", Ystart="None"):
         tChain[0]['Y'] = Ystart
     tChain['Z'] = np.zeros((NStack,M))
     
-    # tChain['X'] = np.load("/home/reza/My_Code/SMLn/gr6/X_24.npy")[-1,:,:]#np.transpose(Struct['X'])
-    # tChain['Y'] = np.load("/home/reza/My_Code/SMLn/gr6/Y_24.npy")[-1,:,:]#np.transpose(Struct['Y'])
-    # tChain['Z'] = np.load("/home/reza/My_Code/SMLn/gr6/Z_24.npy")[-1,:,:]#np.transpose(Struct['Z'])
-    # tChain['loads'] = np.load("/home/reza/My_Code/SMLn/gr6/bernoli_24.npy")[-1,:]
+    tChain['X'] =  np.load("chains/chains1/chain2X_1.npy")[-1,:,:] #np.load("/home/reza/My_Code/SMLn/gr6/X_24.npy")[-1,:,:]#np.transpose(Struct['X'])
+    tChain['Y'] =  np.load("chains/chains1/chain2Y_1.npy")[-1,:,:] #np.load("/home/reza/My_Code/SMLn/gr6/Y_24.npy")[-1,:,:]#np.transpose(Struct['Y'])
+    tChain['Z'] =  np.load("chains/chains1/chain2Z_1.npy")[-1,:,:] #np.load("/home/reza/My_Code/SMLn/gr6/Z_24.npy")[-1,:,:]#np.transpose(Struct['Z'])
+    tChain['loads'] =  np.load("chains/chains1/chain2loads1.npy")[-1] #np.load("/home/reza/My_Code/SMLn/gr6/bernoli_24.npy")[-1,:]
     # np.sum(Data*np.log(PSFstack)-(PSFstack))
 
     # Calculate the PSF 
@@ -1154,7 +1154,7 @@ def RunRit(Data, Struct, BNP, Bg, D, M, Xstart="None", Ystart="None"):
             dlog_post = calculate_log_post(Data, tChain, PSFstack, Struct, LogPrior_Bg, LogPrior_I, LPrior_D, BNP, LPrior_A, LPrior_Phi, lp)
             postrior[jj] = dlog_post
             #save info
-            Save_info(jj, xx, yy, zz, pphase, mmag, II, bbg, dD, dloads, postrior,PSFstack, path ="gr6/")
+            Save_info(jj, xx, yy, zz, pphase, mmag, II, bbg, dD, dloads, postrior,PSFstack, path ="/home/reza/software/BNP_SMTM/code_data/chains/chains1/chain2/")
             
         temp_i = tempreture(jj, temp_i)
         Iter = change_Iteration(jj, Iter)
@@ -1170,14 +1170,14 @@ def RunRit(Data, Struct, BNP, Bg, D, M, Xstart="None", Ystart="None"):
             print(f"time interval = {datetime.datetime.now()-dtt}")
             print(f"time = {datetime.datetime.now()}")
             print(f"tempreture : {temp_i}")
-            plot_trj(jj, M, Struct, tChain['X'], tChain['Y'], tChain['Z'])
+            # plot_trj(jj, M, Struct, tChain['X'], tChain['Y'], tChain['Z'])
             switch_index +=1
-        elif (jj%100 ==0
-            and jj<=2000):
-            print(f"\n Itr = {jj}:")
-            print(f"  loads = {np.mean(dloads[jj-10:jj,:],axis=0)}")
-            print(f"D = {np.mean(dD[jj-10:jj])}")
-            print(f"  I = {tChain['I']}")
+        # elif (jj%100 ==0
+        #     and jj<=2000):
+        #     print(f"\n Itr = {jj}:")
+        #     print(f"  loads = {np.mean(dloads[jj-10:jj,:],axis=0)}")
+        #     print(f"D = {np.mean(dD[jj-10:jj])}")
+        #     print(f"  I = {tChain['I']}")
 
     return tChain
 
